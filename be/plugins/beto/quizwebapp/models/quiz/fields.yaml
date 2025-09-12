@@ -1,0 +1,31 @@
+fields:
+    title:
+        label: Title
+        span: auto
+        type: text
+    slug:
+        label: Slug
+        span: auto
+        preset:
+            field: title
+            type: slug
+        type: text
+    description:
+        label: Description
+        span: full
+        size: large
+        type: richeditor
+    visibility:
+        label: Visibility
+        span: auto
+        options:
+            - Private
+            - Public
+        type: radio
+    author:
+        label: 'Created by'
+        nameFrom: first_name
+        descriptionFrom: description
+        emptyOption: '--Auth--'
+        span: auto
+        type: relation

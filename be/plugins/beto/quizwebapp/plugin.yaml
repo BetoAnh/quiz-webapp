@@ -1,0 +1,11 @@
+plugin:
+    name: 'beto.quizwebapp::lang.plugin.name'
+    description: 'beto.quizwebapp::lang.plugin.description'
+    author: Beto
+    icon: oc-icon-question-circle
+    homepage: ''
+navigation:
+    main-menu-item:
+        label: Quiz
+        url: beto/quizwebapp/quizzes
+        icon: icon-question-circle
