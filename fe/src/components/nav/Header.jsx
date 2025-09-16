@@ -1,9 +1,7 @@
-'use client'
-
 import { useState } from 'react'
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { logout } from "../../services/authService";
+import { logout } from "@/services/authService";
 import {
     Dialog,
     DialogPanel,

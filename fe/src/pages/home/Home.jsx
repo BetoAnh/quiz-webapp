@@ -95,8 +95,9 @@ export const sampleQuiz = {
 
 function Home() {
     return (
-        <div className="p-6">
-            <Quiz quiz={sampleQuiz} />
+        <div className="">
+            {/* <Quiz quiz={sampleQuiz} /> */}
+            
         </div>
     );
 }
