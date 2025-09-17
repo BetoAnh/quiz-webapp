@@ -9,6 +9,7 @@ import Header from "@/components/nav/Header";
 import PracticeQuiz from "@/pages/quiz/PracticeQuiz";
 import QuizDetail from "@/pages/quiz/QuizDetail";
 import ExamQuiz from "@/pages/quiz/ExamQuiz";
+import NewQuiz from "@/pages/quiz/NewQuiz";
 
 function App() {
   return (
@@ -18,9 +19,10 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/home" element={<Home />} />
-          <Route path="/quiz" element={<QuizDetail />} />
+          <Route path="/quiz/:idAndSlug" element={<QuizDetail />} />
           <Route path="/quiz/practice" element={<PracticeQuiz />} />
           <Route path="/quiz/exam" element={<ExamQuiz />} />
+          <Route path="/quiz/new" element={<NewQuiz />} />
           <Route
             path="/login"
             element={

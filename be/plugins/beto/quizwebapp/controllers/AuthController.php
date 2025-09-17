@@ -23,10 +23,31 @@ class AuthController extends Controller
     /** -------- LOGIN -------- */
     public function login(Request $request)
     {
+        // Validate input
+        try {
+            $validated = $request->validate([
+                'email' => 'required|email',
+                'password' => 'required|string|min:6',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
+        }
+
         $user = User::where('email', $request->email)->first();
 
-        if (!$user || !\Hash::check($request->password, $user->password)) {
-            return response()->json(['error' => 'Invalid credentials'], 401);
+        if (!$user) {
+            return response()->json([
+                'message' => 'User not found',
+            ], 404);
+        }
+
+        if (!\Hash::check($request->password, $user->password)) {
+            return response()->json([
+                'message' => 'Invalid credentials',
+            ], 401); // Unauthorized
         }
 
         $token = $this->generateToken($user->id);
@@ -37,21 +58,37 @@ class AuthController extends Controller
                 'user' => [
                     'id' => $user->id,
                     'first_name' => $user->first_name,
-                    'email' => $user->email
+                    'email' => $user->email,
                 ]
-            ]),
+            ], 200), // 200 OK
             $token
         );
     }
 
+
     /** -------- REGISTER -------- */
     public function register(Request $request)
     {
-        $request->validate([
-            'first_name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:6',
-        ]);
+        try {
+            $validated = $request->validate([
+                'first_name' => 'required|string|max:255',
+                'email' => 'required|email|unique:users,email',
+                'password' => 'required|string|min:6',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            $errors = $e->errors();
+
+            if (isset($errors['email']) && in_array("The email has already been taken.", $errors['email'])) {
+                return response()->json([
+                    'message' => 'Email has already been registered',
+                ], 409); // 409 Conflict
+            }
+
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $errors,
+            ], 422);
+        }
 
         $user = new User();
         $user->first_name = $request->first_name;
@@ -67,12 +104,13 @@ class AuthController extends Controller
                 'user' => [
                     'id' => $user->id,
                     'first_name' => $user->first_name,
-                    'email' => $user->email
+                    'email' => $user->email,
                 ]
-            ]),
+            ], 201), // 201 Created
             $token
         );
     }
+
 
     /** -------- LOGOUT -------- */
     public function logout()

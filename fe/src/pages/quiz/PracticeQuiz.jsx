@@ -91,7 +91,7 @@ export default function PracticeQuiz() {
         const stored = decryptData(sessionStorage.getItem(storageKey + '-state'))
         const newAnswers = stored.answers.map((ans, idx) => {
             const q = quiz.questions[idx]
-            return ans.selectedId === q.correctId ? ans : { selectedId: null }
+            return ans.selectedId === q.correct_id ? ans : { selectedId: null }
         })
         resetQuizState(newAnswers, { preserveTime: true }) // giữ nguyên time
     }
@@ -99,11 +99,18 @@ export default function PracticeQuiz() {
     if (!quiz) return <div className="p-4 text-center">Không tìm thấy quiz!</div>
 
     return (
-        <div className="max-w-2xl mx-auto p-4">
-            <div className="text-right text-lg font-semibold mb-2">
-                Thời gian luyện: {formatTime(time)}
+        <div className="p-4">
+            <div className="text-lg flex md:flex-row flex-col justify-between font-semibold">
+                <h2 className="text-2xl font-bold mb-6">{quiz.title}</h2>
+                <div className="flex justify-end md:pb-0 pb-4">
+                    <p className="font-bold text-lg flex items-center gap-2">
+                        Time:
+                        <span className="text-blue-600 font-semibold border py-1 rounded min-w-[80px] text-center">
+                            {formatTime(time)}
+                        </span>
+                    </p>
+                </div>
             </div>
-
             <QuizCore
                 key={resetKey}
                 quiz={quiz}

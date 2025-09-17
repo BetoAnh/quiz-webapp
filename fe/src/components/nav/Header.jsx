@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { logout } from "@/services/authService";
+import { authService } from "@/services";
 import {
     Dialog,
     DialogPanel,
@@ -43,7 +43,7 @@ export default function Header() {
 
     const handleLogout = async () => {
         try {
-            await logout();
+            await authService.logout();
         } catch (err) {
             console.error(err);
         } finally {

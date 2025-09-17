@@ -1,5 +1,5 @@
-import { useAuth } from "../../context/AuthContext";
-import { logout } from "../../services/authService";
+import { useAuth } from "@/context/AuthContext";
+import { authService } from "@/services";
 import { useNavigate } from "react-router-dom";
 
 export default function Profile() {
@@ -8,7 +8,7 @@ export default function Profile() {
 
     const handleLogout = async () => {
         try {
-            await logout();
+            await authService.logout();
         } catch (err) {
             console.error("Logout failed:", err);
         } finally {

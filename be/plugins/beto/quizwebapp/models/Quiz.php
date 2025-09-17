@@ -1,28 +1,29 @@
-<?php namespace Beto\Quizwebapp\Models;
+<?php
+namespace Beto\Quizwebapp\Models;
 
 use Model;
 
-
-/**
- * Model
- */
 class Quiz extends Model
 {
     use \October\Rain\Database\Traits\Validation;
-    
-    /**
-     * @var string table in the database used by the model.
-     */
-    public $table = 'beto_quizwebapp_quizzes';
+    use \October\Rain\Database\Traits\Sluggable;
 
-    /**
-     * @var array rules for validation.
-     */
-    public $rules = [
-    ];
+    protected $table = 'beto_quizwebapp_quizzes';
+
+    // Chỉ cho phép mass assign đúng field cần
+    protected $fillable = ['title', 'description', 'visibility', 'author_id'];
+
+    public $slugs = ['slug' => 'title'];
 
     public $belongsTo = [
-        'author' => 'RainLab\User\Models\User'
+        'author' => ['RainLab\User\Models\User', 'key' => 'author_id']
     ];
 
+    public $hasMany = [
+        'questions' => [Question::class]
+    ];
+
+    public $rules = [
+        'title' => 'required|string|max:255'
+    ];
 }

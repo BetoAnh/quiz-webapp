@@ -13,12 +13,12 @@ function Question({ question, selectedId, onAnswer, mode }) {
                         if (selectedId !== null && selectedId !== undefined) {
                             if (option.id === selectedId) {
                                 bgClass =
-                                    option.id === question.correctId
+                                    option.id === question.correct_id
                                         ? 'bg-green-500 text-white'
                                         : 'bg-red-500 text-white'
                             } else if (
-                                selectedId !== question.correctId &&
-                                option.id === question.correctId
+                                selectedId !== question.correct_id &&
+                                option.id === question.correct_id
                             ) {
                                 bgClass = 'bg-green-500 text-white'
                             }
@@ -97,59 +97,74 @@ export default function QuizCore({ quiz, storageKey, onAnswerSelect, mode }) {
     }
 
     return (
-        <div className="max-w-3xl mx-auto p-6">
-            <h2 className="text-2xl font-bold mb-6">{quiz.title}</h2>
+        <div className="max-w-5xl mx-auto">
+            {/* Bọc trong flex có responsive direction */}
+            <div className="flex flex-col md:flex-row gap-6">
+                {/* Câu hỏi */}
+                <div className="flex-1">
+                    <Question
+                        question={quiz.questions[currentIndex]}
+                        selectedId={selectedIds[currentIndex]}
+                        onAnswer={handleAnswer}
+                        mode={mode}
+                    />
+                </div>
 
-            {/* Question Navigator */}
-            <div className="flex flex-wrap gap-2 mb-6">
-                {quiz.questions.map((_, idx) => {
-                    let bgClass = 'bg-gray-100 border-gray-300 hover:bg-gray-200'
-                    const selectedId = selectedIds[idx]
+                {/* Navigator */}
+                <div
+                    className={`
+                        grid gap-2
+                        grid-cols-[repeat(auto-fill,minmax(2.5rem,1fr))]
+                        overflow-y-auto
+                        max-h-[calc(2.5rem*4+0.5rem*3)]  
+                        md:pr-2
+                        md:grid-cols-3 md:self-start
+                        md:max-h-[calc(2.5rem*10+0.5rem*9)]  
+                    `}
+                >
 
-                    if (mode === "practice") {
-                        if (selectedId !== null && selectedId !== undefined) {
-                            if (selectedId === quiz.questions[idx].correctId)
-                                bgClass = 'bg-green-200 border-green-400'
-                            else bgClass = 'bg-red-200 border-red-400'
+                    {quiz.questions.map((_, idx) => {
+                        let bgClass = 'bg-gray-100 border-gray-300 hover:bg-gray-200'
+                        const selectedId = selectedIds[idx]
+
+                        if (mode === "practice") {
+                            if (selectedId !== null && selectedId !== undefined) {
+                                if (selectedId === quiz.questions[idx].correct_id)
+                                    bgClass = 'bg-green-200 border-green-400'
+                                else bgClass = 'bg-red-200 border-red-400'
+                            }
+
+                            if (idx === currentIndex) {
+                                if (selectedId === quiz.questions[idx].correct_id)
+                                    bgClass = 'bg-green-500 border-green-600 text-white'
+                                else if (
+                                    selectedId !== null &&
+                                    selectedId !== undefined &&
+                                    selectedId !== quiz.questions[idx].correct_id
+                                )
+                                    bgClass = 'bg-red-500 border-red-600 text-white'
+                                else bgClass = 'bg-indigo-600 text-white border-indigo-700'
+                            }
+                        } else if (mode === "exam") {
+                            if (idx === currentIndex) {
+                                bgClass = 'bg-indigo-600 text-white border-indigo-700'
+                            } else if (selectedId !== null && selectedId !== undefined) {
+                                bgClass = 'bg-yellow-300 border-yellow-500'
+                            }
                         }
 
-                        if (idx === currentIndex) {
-                            if (selectedId === quiz.questions[idx].correctId)
-                                bgClass = 'bg-green-500 border-green-600 text-white'
-                            else if (
-                                selectedId !== null &&
-                                selectedId !== undefined &&
-                                selectedId !== quiz.questions[idx].correctId
-                            )
-                                bgClass = 'bg-red-500 border-red-600 text-white'
-                            else bgClass = 'bg-indigo-600 text-white border-indigo-700'
-                        }
-                    } else if (mode === "exam") {
-                        if (idx === currentIndex) {
-                            bgClass = 'bg-indigo-600 text-white border-indigo-700'
-                        } else if (selectedId !== null && selectedId !== undefined) {
-                            bgClass = 'bg-yellow-300 border-yellow-500'
-                        }
-                    }
-
-                    return (
-                        <button
-                            key={idx}
-                            onClick={() => setCurrentIndex(idx)}
-                            className={`w-10 h-10 flex items-center justify-center rounded border font-semibold ${bgClass}`}
-                        >
-                            {idx + 1}
-                        </button>
-                    )
-                })}
+                        return (
+                            <button
+                                key={idx}
+                                onClick={() => setCurrentIndex(idx)}
+                                className={`w-10 h-10 flex items-center justify-center rounded border font-semibold ${bgClass}`}
+                            >
+                                {idx + 1}
+                            </button>
+                        )
+                    })}
+                </div>
             </div>
-
-            <Question
-                question={quiz.questions[currentIndex]}
-                selectedId={selectedIds[currentIndex]}
-                onAnswer={handleAnswer}
-                mode={mode}
-            />
         </div>
     )
 }
