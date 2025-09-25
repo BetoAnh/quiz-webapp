@@ -1,43 +1,23 @@
-import { useState } from 'react'
+import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { authService } from "@/services";
 import {
     Dialog,
     DialogPanel,
-    Disclosure,
-    DisclosureButton,
-    DisclosurePanel,
-    Popover,
-    PopoverButton,
-    PopoverGroup,
-    PopoverPanel,
-} from '@headlessui/react'
-import {
-    ArrowPathIcon,
-    Bars3Icon,
-    ChartPieIcon,
-    CursorArrowRaysIcon,
-    FingerPrintIcon,
-    SquaresPlusIcon,
-    XMarkIcon,
-} from '@heroicons/react/24/outline'
-import { ChevronDownIcon, PhoneIcon, PlayCircleIcon } from '@heroicons/react/20/solid'
+    Menu,
+    MenuButton,
+    MenuItems,
+    MenuItem,
+} from "@headlessui/react";
+import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 
-const products = [
-    { name: 'Analytics', description: 'Get a better understanding of your traffic', href: '#', icon: ChartPieIcon },
-    { name: 'Engagement', description: 'Speak directly to your customers', href: '#', icon: CursorArrowRaysIcon },
-    { name: 'Security', description: 'Your customers’ data will be safe and secure', href: '#', icon: FingerPrintIcon },
-    { name: 'Integrations', description: 'Connect with third-party tools', href: '#', icon: SquaresPlusIcon },
-    { name: 'Automations', description: 'Build strategic funnels that will convert', href: '#', icon: ArrowPathIcon },
-]
-const callsToAction = [
-    { name: 'Watch demo', href: '#', icon: PlayCircleIcon },
-    { name: 'Contact sales', href: '#', icon: PhoneIcon },
-]
+// Import SearchBar
+import SearchBar from "@/components/nav/SearchBar";
+import CategoriesMenu from "../category/CategoriesMenu";
 
 export default function Header() {
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const { user, setUser } = useAuth();
     const navigate = useNavigate();
 
@@ -54,94 +34,24 @@ export default function Header() {
     };
 
     return (
-        <header className="bg-white">
-            <nav className="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8" aria-label="Global">
-                <div className="flex lg:flex-1">
-                    <a href="/" className="-m-1.5 p-1.5">
-                        <span className="sr-only">MyApp</span>
-                        <img
-                            alt=""
-                            src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600"
-                            className="h-8 w-auto"
-                        />
-                    </a>
-                </div>
-
-                {/* Mobile menu button */}
-                <div className="flex lg:hidden">
-                    <button
-                        type="button"
-                        onClick={() => setMobileMenuOpen(true)}
-                        className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700"
-                    >
-                        <span className="sr-only">Open main menu</span>
-                        <Bars3Icon className="h-6 w-6" aria-hidden="true" />
-                    </button>
-                </div>
-
-                {/* Desktop menu */}
-                <PopoverGroup className="hidden lg:flex lg:gap-x-12">
-                    <Popover className="relative">
-                        <PopoverButton className="flex items-center gap-x-1 text-sm/6 font-semibold text-gray-900">
-                            Product
-                            <ChevronDownIcon className="h-5 w-5 flex-none text-gray-400" aria-hidden="true" />
-                        </PopoverButton>
-
-                        <PopoverPanel className="absolute left-1/2 z-10 mt-3 w-screen max-w-md -translate-x-1/2 overflow-hidden rounded-3xl bg-white shadow-lg outline-1 outline-gray-900/5">
-                            <div className="p-4">
-                                {products.map((item) => (
-                                    <div key={item.name} className="group relative flex items-center gap-x-6 rounded-lg p-4 text-sm/6 hover:bg-gray-50">
-                                        <div className="flex h-11 w-11 flex-none items-center justify-center rounded-lg bg-gray-50 group-hover:bg-white">
-                                            <item.icon className="h-6 w-6 text-gray-600 group-hover:text-indigo-600" aria-hidden="true" />
-                                        </div>
-                                        <div className="flex-auto">
-                                            <a href={item.href} className="block font-semibold text-gray-900">
-                                                {item.name}
-                                                <span className="absolute inset-0" />
-                                            </a>
-                                            <p className="mt-1 text-gray-600">{item.description}</p>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                            <div className="grid grid-cols-2 divide-x divide-gray-900/5 bg-gray-50">
-                                {callsToAction.map((item) => (
-                                    <a key={item.name} href={item.href} className="flex items-center justify-center gap-x-2.5 p-3 text-sm/6 font-semibold text-gray-900 hover:bg-gray-100">
-                                        <item.icon className="h-5 w-5 flex-none text-gray-400" aria-hidden="true" />
-                                        {item.name}
-                                    </a>
-                                ))}
-                            </div>
-                        </PopoverPanel>
-                    </Popover>
-
-                    <a href="#" className="text-sm/6 font-semibold text-gray-900">Features</a>
-                    <a href="#" className="text-sm/6 font-semibold text-gray-900">Marketplace</a>
-                    <a href="#" className="text-sm/6 font-semibold text-gray-900">Company</a>
-                </PopoverGroup>
-
-                {/* User / Login */}
-                <div className="hidden lg:flex lg:flex-1 lg:justify-end items-center space-x-4">
-                    {user ? (
-                        <>
-                            <span>👋 {user.first_name}</span>
-                            <button onClick={handleLogout} className="bg-red-500 px-2 py-1 rounded hover:bg-red-600">
-                                Logout
-                            </button>
-                        </>
-                    ) : (
-                        <a href="/login" className="text-sm/6 font-semibold text-gray-900">
-                            Log in <span aria-hidden="true">&rarr;</span>
-                        </a>
-                    )}
-                </div>
-            </nav>
-
-            {/* Mobile menu dialog */}
-            <Dialog open={mobileMenuOpen} onClose={setMobileMenuOpen} className="lg:hidden">
-                <div className="fixed inset-0 z-50 bg-black/10" />
-                <DialogPanel className="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto bg-white p-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10">
-                    <div className="flex items-center justify-between">
+        <header className="z-10">
+            <nav
+                className="flex items-center justify-between p-6 bg-white rounded-b-2xl shadow-sm lg:px-8"
+                aria-label="Global"
+            >
+                <div className="flex gap-4">
+                    <div className="flex lg:hidden">
+                        <button
+                            type="button"
+                            onClick={() => setMobileMenuOpen(true)}
+                            className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700"
+                        >
+                            <span className="sr-only">Open main menu</span>
+                            <Bars3Icon className="h-6 w-6" aria-hidden="true" />
+                        </button>
+                    </div>
+                    {/* Logo */}
+                    <div className="flex lg:flex-1">
                         <a href="/" className="-m-1.5 p-1.5">
                             <span className="sr-only">MyApp</span>
                             <img
@@ -150,52 +60,220 @@ export default function Header() {
                                 className="h-8 w-auto"
                             />
                         </a>
-                        <button type="button" onClick={() => setMobileMenuOpen(false)} className="-m-2.5 rounded-md p-2.5 text-gray-700">
-                            <span className="sr-only">Close menu</span>
-                            <XMarkIcon className="h-6 w-6" aria-hidden="true" />
-                        </button>
+                    </div>
+                    <div className="hidden lg:flex items-center space-x-6">
+                        <CategoriesMenu />
+                    </div>
+                </div>
+
+
+                {/* Thanh tìm kiếm với nav + tạo */}
+                <div className="hidden lg:flex flex-1 justify-center px-6 items-center space-x-6">
+                    <SearchBar />
+                </div>
+
+
+
+
+                {/* User / Login */}
+                <div className="flex gap-4 items-center space-x-4">
+                    <a
+                        href="/create"
+                        className="block text-sm font-semibold text-indigo-600 hover:text-indigo-800"
+                    >
+                        + Tạo
+                    </a>
+
+                    {user ? (
+                        <Menu as="div" className="relative">
+                            <MenuButton className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-100 text-gray-700 cursor-pointer">
+                                <span className="font-bold">{user.first_name[0]}</span>
+                            </MenuButton>
+                            <MenuItems className="absolute right-0 mt-2 w-60 origin-top-right bg-white border border-gray-200 rounded-lg shadow-lg focus:outline-none z-10">
+                                <MenuItem>
+                                    <div className="p-4 flex border-b border-gray-200 gap-3">
+                                        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-100 text-gray-700 cursor-pointer">
+                                            <span className="font-bold">{user.first_name[0]}</span>
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-semibold text-gray-900">{`${user.last_name} ${user.first_name}`}</p>
+                                            <p className="text-sm font-medium text-gray-500">{user.username || user.email}</p>
+                                        </div>
+                                    </div>
+                                </MenuItem>
+                                <MenuItem>
+                                    {({ active }) => (
+                                        <NavLink
+                                            to={`/profile/${user.id}`}
+                                            className={`block px-4 py-2 text-sm ${active ? "bg-gray-100" : ""
+                                                }`}
+                                        >
+                                            Profile
+                                        </NavLink>
+                                    )}
+                                </MenuItem>
+                                <MenuItem>
+                                    {({ active }) => (
+                                        <a
+                                            href="/dashboard"
+                                            className={`block px-4 py-2 text-sm ${active ? "bg-gray-100" : ""
+                                                }`}
+                                        >
+                                            Dashboard
+                                        </a>
+                                    )}
+                                </MenuItem>
+                                <MenuItem>
+                                    {({ active }) => (
+                                        <a
+                                            href="/settings"
+                                            className={`block px-4 py-2 text-sm ${active ? "bg-gray-100" : ""
+                                                }`}
+                                        >
+                                            Cài đặt
+                                        </a>
+                                    )}
+                                </MenuItem>
+                                <MenuItem>
+                                    {({ active }) => (
+                                        <button
+                                            onClick={handleLogout}
+                                            className={`w-full text-left block px-4 py-2 text-sm text-red-600 ${active ? "bg-gray-100" : ""
+                                                }`}
+                                        >
+                                            Đăng xuất
+                                        </button>
+                                    )}
+                                </MenuItem>
+                            </MenuItems>
+                        </Menu>
+                    ) : (
+                        <a
+                            href="/login"
+                            className="text-sm font-semibold text-white py-2 px-4 rounded-2xl bg-blue-600 hover:bg-blue-700"
+                        >
+                            Đăng nhập
+                        </a>
+                    )}
+                </div>
+            </nav>
+
+            {/* Mobile menu dialog */}
+            <Dialog open={mobileMenuOpen} onClose={setMobileMenuOpen} className="lg:hidden">
+                <div className="fixed inset-0 z-50 bg-black/10" />
+                <DialogPanel className="fixed inset-y-0 left-0 z-50 w-full overflow-y-auto bg-white p-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10">
+                    <div className="flex items-center justify-between">
+                        <div className="flex gap-4">
+                            <button
+                                type="button"
+                                onClick={() => setMobileMenuOpen(false)}
+                                className="-m-2.5 rounded-md p-2.5 text-gray-700"
+                            >
+                                <span className="sr-only">Close menu</span>
+                                <XMarkIcon className="h-6 w-6" aria-hidden="true" />
+                            </button>
+                            <a href="/" className="-m-1.5 p-1.5">
+                                <span className="sr-only">MyApp</span>
+                                <img
+                                    alt=""
+                                    src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600"
+                                    className="h-8 w-auto"
+                                />
+                            </a>
+                        </div>
+
+                        <div className="items-center gap-4 space-x-4 flex sm:hidden ">
+                            <a
+                                href="/create"
+                                className="block text-sm font-semibold text-indigo-600 hover:text-indigo-800"
+                            >
+                                + Tạo
+                            </a>
+                            {user ? (
+                                <Menu as="div" className="relative">
+                                    <MenuButton className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-100 text-gray-700 cursor-pointer">
+                                        <span className="font-bold">{user.first_name[0]}</span>
+                                    </MenuButton>
+                                    <MenuItems className="absolute right-0 mt-2 w-48 origin-top-right bg-white border border-gray-200 rounded-lg shadow-lg focus:outline-none">
+                                        <MenuItem>
+                                            <div className="p-4 flex border-b border-gray-200 gap-3">
+                                                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-100 text-gray-700 cursor-pointer">
+                                                    <span className="font-bold">{user.first_name[0]}</span>
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-semibold text-gray-900">{`${user.last_name} ${user.first_name}`}</p>
+                                                    <p className="text-sm font-medium text-gray-500">{user.username || user.email}</p>
+                                                </div>
+                                            </div>
+                                        </MenuItem>
+                                        <MenuItem>
+                                            {({ active }) => (
+                                                <NavLink
+                                                    to={`/profile/${user.id}`}
+                                                    className={`block font-semibold px-4 py-2 text-sm ${active ? "bg-gray-100" : ""
+                                                        }`}
+                                                >
+                                                    Profile
+                                                </NavLink>
+                                            )}
+                                        </MenuItem>
+                                        <MenuItem>
+                                            {({ active }) => (
+                                                <a
+                                                    href="/dashboard"
+                                                    className={`block px-4 font-semibold py-2 text-sm ${active ? "bg-gray-100" : ""
+                                                        }`}
+                                                >
+                                                    Dashboard
+                                                </a>
+                                            )}
+                                        </MenuItem>
+                                        <MenuItem>
+                                            {({ active }) => (
+                                                <a
+                                                    href="/settings"
+                                                    className={`block px-4 font-semibold py-2 text-sm ${active ? "bg-gray-100" : ""
+                                                        }`}
+                                                >
+                                                    Cài đặt
+                                                </a>
+                                            )}
+                                        </MenuItem>
+                                        <MenuItem>
+                                            {({ active }) => (
+                                                <button
+                                                    onClick={handleLogout}
+                                                    className={`w-full text-left block font-semibold px-4 py-2 text-sm text-red-600 ${active ? "bg-gray-100" : ""
+                                                        }`}
+                                                >
+                                                    Đăng xuất
+                                                </button>
+                                            )}
+                                        </MenuItem>
+                                    </MenuItems>
+                                </Menu>
+                            ) : (
+                                <a
+                                    href="/login"
+                                    className="text-sm font-semibold text-white py-2 px-4 rounded-2xl bg-blue-600 hover:bg-blue-700"
+                                >
+                                    Đăng nhập
+                                </a>
+                            )}
+                        </div>
                     </div>
 
-                    <div className="mt-6 flow-root">
-                        <div className="-my-6 divide-y divide-gray-500/10">
-                            <div className="space-y-2 py-6">
-                                <Disclosure as="div" className="-mx-3">
-                                    <DisclosureButton className="group flex w-full items-center justify-between rounded-lg py-2 pr-3.5 pl-3 text-base/7 font-semibold text-gray-900 hover:bg-gray-50">
-                                        Product
-                                        <ChevronDownIcon className="h-5 w-5 flex-none group-data-open:rotate-180" aria-hidden="true" />
-                                    </DisclosureButton>
-                                    <DisclosurePanel className="mt-2 space-y-2">
-                                        {[...products, ...callsToAction].map((item) => (
-                                            <DisclosureButton key={item.name} as="a" href={item.href} className="block rounded-lg py-2 pr-3 pl-6 text-sm/7 font-semibold text-gray-900 hover:bg-gray-50">
-                                                {item.name}
-                                            </DisclosureButton>
-                                        ))}
-                                    </DisclosurePanel>
-                                </Disclosure>
+                    {/* Menu chủ đề trong mobile */}
+                    <div className="mt-6">
+                        <CategoriesMenu />
+                    </div>
 
-                                <a href="#" className="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 hover:bg-gray-50">Features</a>
-                                <a href="#" className="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 hover:bg-gray-50">Marketplace</a>
-                                <a href="#" className="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 hover:bg-gray-50">Company</a>
-                            </div>
-
-                            <div className="py-6">
-                                {user ? (
-                                    <div className="-mx-3 flex items-center justify-between space-x-2">
-                                        <span>👋 {user.first_name}</span>
-                                        <button onClick={handleLogout} className="bg-red-500 px-2 py-1 rounded hover:bg-red-600">
-                                            Logout
-                                        </button>
-                                    </div>
-                                ) : (
-                                    <a href="/login" className="-mx-3 block rounded-lg px-3 py-2.5 text-base/7 font-semibold text-gray-900 hover:bg-gray-50">
-                                        Log in
-                                    </a>
-                                )}
-                            </div>
-                        </div>
+                    {/* Search trong mobile */}
+                    <div className="mt-6">
+                        <SearchBar />
                     </div>
                 </DialogPanel>
             </Dialog>
         </header>
-    )
+    );
 }

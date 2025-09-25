@@ -2,6 +2,7 @@
 namespace Beto\Quizwebapp\Models;
 
 use Model;
+use RainLab\User\Models\User;
 
 class Quiz extends Model
 {
@@ -16,7 +17,8 @@ class Quiz extends Model
     public $slugs = ['slug' => 'title'];
 
     public $belongsTo = [
-        'author' => ['RainLab\User\Models\User', 'key' => 'author_id']
+        'author' => [User::class, 'key' => 'author_id'],
+        'category' => [Category::class, 'key' => 'category_id'],
     ];
 
     public $hasMany = [

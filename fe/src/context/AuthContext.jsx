@@ -22,7 +22,7 @@ export function AuthProvider({ children }) {
                 return;
             }
             try {
-                const res = await authService.getProfile();
+                const res = await authService.auth();
                 setUser(res.data);
             } catch (err) {
                 if (err.response?.status === 401) {

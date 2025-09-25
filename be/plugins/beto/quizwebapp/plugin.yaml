@@ -6,6 +6,15 @@ plugin:
     homepage: ''
 navigation:
     main-menu-item:
-        label: Quiz
+        label: QuizWebApp
         url: beto/quizwebapp/quizzes
-        icon: icon-question-circle
+        icon: icon-question
+        sideMenu:
+            side-menu-item:
+                label: Categories
+                url: beto/quizwebapp/category
+                icon: icon-list-alt
+            side-menu-item2:
+                label: Quiz
+                url: beto/quizwebapp/quizzes
+                icon: icon-question-circle

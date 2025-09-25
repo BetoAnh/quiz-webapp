@@ -1,4 +1,5 @@
-<?php namespace RainLab\User\Models;
+<?php
+namespace RainLab\User\Models;
 
 use Str;
 use Event;
@@ -72,6 +73,7 @@ class User extends Model implements Authenticatable, CanResetPassword
         'username' => ['required', 'between:2,255', 'unique:users,username,NULL,id,is_guest,false'],
         'password' => ['required:create', 'string', 'confirmed'],
         'avatar' => ['nullable', 'image', 'max:4000'],
+        'notes' => ['nullable', 'string'],
     ];
 
     /**
@@ -98,6 +100,7 @@ class User extends Model implements Authenticatable, CanResetPassword
         'password',
         'password_confirmation',
         'is_guest',
+        'notes',
     ];
 
     /**
@@ -147,7 +150,7 @@ class User extends Model implements Authenticatable, CanResetPassword
         'groups' => [
             UserGroup::class,
             'table' => 'users_groups'
-        ]
+        ],
     ];
 
     /**
@@ -155,6 +158,7 @@ class User extends Model implements Authenticatable, CanResetPassword
      */
     public $hasMany = [
         'activity_log' => [UserLog::class, 'delete' => true],
+        'quizzes' => [\Beto\Quizwebapp\Models\Quiz::class, 'key' => 'author_id'],
     ];
 
     /**
@@ -203,8 +207,7 @@ class User extends Model implements Authenticatable, CanResetPassword
     {
         if (is_string($options)) {
             $options = ['default' => $options];
-        }
-        elseif (!is_array($options)) {
+        } elseif (!is_array($options)) {
             $options = [];
         }
 
@@ -213,8 +216,7 @@ class User extends Model implements Authenticatable, CanResetPassword
 
         if ($this->avatar) {
             return $this->avatar->getThumb($size, $size, $options);
-        }
-        else {
+        } else {
             $emailHash = md5(strtolower(trim($this->email)));
             $defaultUrl = urlencode($default);
             return "//www.gravatar.com/avatar/{$emailHash}?s={$size}&d={$defaultUrl}";
@@ -300,8 +302,7 @@ class User extends Model implements Authenticatable, CanResetPassword
     {
         if ($this->is_guest) {
             $this->primary_group = UserGroup::getGuestGroup();
-        }
-        elseif (!$this->primary_group_id) {
+        } elseif (!$this->primary_group_id) {
             $this->primary_group = UserGroup::getRegisteredGroup();
         }
     }
@@ -449,7 +450,7 @@ class User extends Model implements Authenticatable, CanResetPassword
      */
     public function generatePassword()
     {
-        $this->password = $this->password_confirmation = Str::random(12).rand(10, 99);
+        $this->password = $this->password_confirmation = Str::random(12) . rand(10, 99);
     }
 
     /**

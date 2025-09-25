@@ -7,5 +7,11 @@ export const authService = {
 
   logout: () => api.post("/logout"),
 
-  getProfile: () => api.get("/profile"),
+  auth: () => api.get("/auth"),
+
+  // Đổi mật khẩu
+  changePassword: (data) => api.post("/change-password", data),
+
+  // Xóa tài khoản
+  deleteAccount: () => api.delete("/delete-account"),
 };

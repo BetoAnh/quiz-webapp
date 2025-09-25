@@ -13,15 +13,8 @@ fields:
     description:
         label: Description
         span: full
-        size: large
-        type: richeditor
-    visibility:
-        label: Visibility
-        span: auto
-        options:
-            - Private
-            - Public
-        type: radio
+        size: small
+        type: textarea
     author:
         label: 'Created by'
         nameFrom: first_name
@@ -29,3 +22,17 @@ fields:
         emptyOption: '--Auth--'
         span: auto
         type: relation
+    category:
+        label: Category
+        span: auto
+        nameFrom: name
+        descriptionFrom: description
+        emptyOption: '---Chọn Category---'
+        type: relation
+    visibility:
+        label: Visibility
+        options:
+            private: Private
+            public: Public
+        span: auto
+        type: radio

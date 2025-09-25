@@ -59,6 +59,8 @@ class AuthController extends Controller
                     'id' => $user->id,
                     'first_name' => $user->first_name,
                     'email' => $user->email,
+                    'username' => $user->username,
+                    'last_name' => $user->last_name,
                 ]
             ], 200), // 200 OK
             $token
@@ -104,6 +106,8 @@ class AuthController extends Controller
                 'user' => [
                     'id' => $user->id,
                     'first_name' => $user->first_name,
+                    'last_name' => $user->last_name,
+                    'username' => $user->username,
                     'email' => $user->email,
                 ]
             ], 201), // 201 Created
@@ -120,7 +124,7 @@ class AuthController extends Controller
     }
 
     /** -------- PROFILE -------- */
-    public function profile(Request $request)
+    public function auth(Request $request)
     {
         $user = $request->user(); // lấy từ middleware
 
@@ -131,7 +135,9 @@ class AuthController extends Controller
         return response()->json([
             'id' => $user->id,
             'first_name' => $user->first_name,
-            'email' => $user->email
+            'email' => $user->email,
+            'username' => $user->username,
+            'last_name' => $user->last_name,
         ]);
     }
 

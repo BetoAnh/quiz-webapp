@@ -1,43 +1,89 @@
+import { useParams } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { authService } from "@/services";
-import { useNavigate } from "react-router-dom";
+import { userService } from "@/services";
+import ProfileSkeleton from "@/components/profile/ProfileSkeleton";
+import NotFound from "@/components/common/NotFound";
+import QuizList from "@/components/quiz/QuizList";
+import { ClockIcon } from '@heroicons/react/24/solid';
 
-export default function Profile() {
-    const { user, setUser } = useAuth();
-    const navigate = useNavigate();
+export default function ProfilePage() {
+    const { identifier } = useParams();
+    const { user, setUser } = useAuth(); // current logged-in user
+    const [profile, setProfile] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [openEdit, setOpenEdit] = useState(false);
+    const [quizzes, setQuizzes] = useState([]);
 
-    const handleLogout = async () => {
+    const categories = [
+        { id: 1, name: "Math" },
+        { id: 2, name: "Science" },
+        { id: 3, name: "History" },
+        { id: 4, name: "Literature" },
+    ];
+
+    const fetchProfile = async () => {
         try {
-            await authService.logout();
+            let identifierValue = identifier;
+            let res;
+            if (identifier.startsWith("@")) {
+                identifierValue = identifier.substring(1);
+                res = await userService.getByUsername(identifierValue);
+            } else {
+                res = await userService.getById(identifierValue);
+            }
+            setProfile(res.data);
+            setQuizzes(res.data.quizzes); // reset quizzes
+            console.log("Fetched profile:", res.data);
         } catch (err) {
-            console.error("Logout failed:", err);
+            console.error("Không tìm thấy user", err);
         } finally {
-            setUser(null);
-            localStorage.removeItem("user");
-            navigate("/login", { replace: true });
+            setLoading(false);
         }
     };
 
-    if (!user) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-red-100">
-                <p className="text-lg text-red-600">Bạn chưa đăng nhập</p>
-            </div>
-        );
-    }
+    useEffect(() => {
+        fetchProfile();
+    }, [identifier]);
+
+    if (loading) return <ProfileSkeleton />;
+    if (!profile) return <NotFound message="Không tìm thấy người dùng" />;
 
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center bg-blue-100">
-            <h1 className="text-3xl font-bold mb-4">Profile</h1>
-            <p><strong>ID:</strong> {user.id}</p>
-            <p><strong>Name:</strong> {user.first_name}</p>
-            <p><strong>Email:</strong> {user.email}</p>
-            <button
-                onClick={handleLogout}
-                className="mt-6 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-            >
-                Logout
-            </button>
+        <div className="py-6">
+            <div className="bg-white rounded-2xl shadow-md p-6 ">
+                {/* Thông tin user */}
+                <h1 className="text-2xl font-bold text-gray-800">
+                    {profile.last_name} {profile.first_name}
+                </h1>
+                <p className="text-gray-500">@{profile.username}</p>
+
+                <p
+                    className="text-gray-700 mt-3 whitespace-pre-line line-clamp-2 min-h-[3rem]"
+                >
+                    {profile.notes ? profile.notes : "Chưa có giới thiệu."}
+                </p>
+                {/* Action */}
+
+                <div className="mt-2 flex justify-between items-center relative">
+                    <p className="text-gray-500 flex items-center font-semibold gap-1">
+                        <ClockIcon className="w-4 h-4" />
+                        Tham gia vào{" "}
+                        {new Date(profile.created_at).toLocaleDateString("vi-VN", {
+                            month: "long",
+                            year: "numeric",
+                        })}
+                    </p>
+                </div>
+
+            </div>
+            <div className="mt-6 bg-white rounded-2xl shadow-md p-6">
+                <QuizList
+                    quizzes={quizzes}
+                    loading={loading}
+                    categories={categories}
+                />
+            </div>
         </div>
     );
 }

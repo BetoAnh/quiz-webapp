@@ -15,8 +15,6 @@ export default function Login() {
         password_confirmation: "",
     });
 
-    const from = location.state?.from?.pathname || "/profile";
-
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value });
     };
@@ -47,7 +45,8 @@ export default function Login() {
 
             setUser(res.data.user);
             localStorage.setItem("user", JSON.stringify(res.data.user));
-            navigate(from, { replace: true });
+            const redirectPath = location.state?.from?.pathname || `/profile/${res.data.user.id}`;
+            navigate(redirectPath, { replace: true });
         } catch (err) {
             alert(
                 "Error: " +
@@ -59,8 +58,9 @@ export default function Login() {
     }
 
     return (
-        <div className="flex items-center justify-center bg-gray-100 h-screen">
-            <div className="bg-white p-8 rounded shadow-md w-90">
+        <div className="relative flex items-center justify-center bg-gray-100 py-20 mt-10 mb-1.5 rounded-2xl shadow-lg overflow-hidden">
+            <img src="/images/bg-login.jpg" alt="Logo" className="absolute top-0 left-0 z-0 w-full h-full object-cover" />
+            <div className="bg-white/80 backdrop-blur p-8 rounded-2xl shadow-md w-90 z-10">
                 <h2 className="text-center text-2xl font-bold text-gray-900">
                     {isRegister ? "Register" : "Login"}
                 </h2>

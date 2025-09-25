@@ -118,8 +118,8 @@ export default function QuizCore({ quiz, storageKey, onAnswerSelect, mode }) {
                         overflow-y-auto
                         max-h-[calc(2.5rem*4+0.5rem*3)]  
                         md:pr-2
-                        md:grid-cols-3 md:self-start
-                        md:max-h-[calc(2.5rem*10+0.5rem*9)]  
+                        md:grid-cols-4 md:self-start
+                        md:max-h-[calc(2.5rem*7+0.5rem*6)]  
                     `}
                 >
 

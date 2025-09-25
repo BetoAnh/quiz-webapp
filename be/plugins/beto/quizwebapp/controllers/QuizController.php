@@ -11,18 +11,20 @@ use Illuminate\Support\Str;
 
 class QuizController extends Controller
 {
-    public function __construct()
-    {
-        parent::__construct();
-        BackendMenu::setContext('Beto.Quizwebapp', 'quiz', 'quizcontroller');
-    }
-
-    /**
-     * API: Lấy tất cả quiz + questions
-     */
     public function index()
     {
-        $quizzes = Quiz::get();
+        $quizzes = Quiz::with('author:id,first_name,last_name')->get();
+        return response()->json($quizzes);
+    }
+
+    public function myquizzes(Request $request)
+    {
+        $user = $request->user();
+
+        $quizzes = Quiz::with(['author:id,first_name,last_name', 'category:id,name'])
+            ->where('author_id', $user->id)
+            ->get();
+
         return response()->json($quizzes);
     }
 
@@ -31,7 +33,11 @@ class QuizController extends Controller
      */
     public function show($id)
     {
-        $quiz = Quiz::with('questions')->find($id);
+        $quiz = Quiz::with([
+            'questions',
+            'author:id,first_name,last_name'
+        ])->find($id);
+
         if (!$quiz) {
             return response()->json(['error' => 'Quiz not found'], 404);
         }
