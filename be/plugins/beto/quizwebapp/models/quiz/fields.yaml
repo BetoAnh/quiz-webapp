@@ -36,3 +36,10 @@ fields:
             public: Public
         span: auto
         type: radio
+    level:
+        label: Level
+        span: auto
+        nameFrom: name
+        descriptionFrom: description
+        emptyOption: '------'
+        type: relation

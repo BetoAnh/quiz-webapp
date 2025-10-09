@@ -15,8 +15,13 @@ export default function MyQuizzes() {
                 const res = await quizService.myquizzes();
                 console.log("Fetched quizzes:", res.data);
 
-                if (isMounted) {
-                    setQuizzes(res.data);
+                if (isMounted && Array.isArray(res.data)) {
+                    // 🔹 Sắp xếp giảm dần theo thời gian tạo (mới nhất trước)
+                    const sorted = [...res.data].sort(
+                        (a, b) => new Date(b.created_at) - new Date(a.created_at)
+                    );
+
+                    setQuizzes(sorted);
                 }
             } catch (err) {
                 console.error("Error fetching quizzes:", err);

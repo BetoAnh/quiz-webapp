@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Dialog, RadioGroup } from "@headlessui/react";
 import { PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { quizService } from "@/services";
 
-export default function NewQuizForm({ onCancel }) {
+export default function NewQuizForm({ onCancel, defaultData }) {
     const navigate = useNavigate();
 
     const [quiz, setQuiz] = useState({
@@ -15,6 +15,42 @@ export default function NewQuizForm({ onCancel }) {
             { id: 0, text: "", options: [{ id: 0, text: "" }], correctId: 0 },
         ],
     });
+
+    useEffect(() => {
+        if (defaultData) {
+            const mappedQuestions = defaultData.questions?.map((q, i) => ({
+                id: i,
+                text: q.text || "",
+                options: (q.options || []).map((opt, j) => ({
+                    id: j,
+                    text: opt.text || opt || "", // hỗ trợ cả trường hợp AI trả chuỗi thô
+                })),
+                correctId:
+                    typeof q.correctId === "number"
+                        ? q.correctId
+                        : q.correctIndex ?? 0,
+            })) || [];
+
+            setQuiz({
+                title: defaultData.title || "Quiz được sinh bởi AI",
+                description:
+                    defaultData.description ||
+                    "Quiz này được sinh tự động từ tài liệu của bạn.",
+                visibility: "public",
+                questions:
+                    mappedQuestions.length > 0
+                        ? mappedQuestions
+                        : [
+                            {
+                                id: 0,
+                                text: "",
+                                options: [{ id: 0, text: "" }],
+                                correctId: 0,
+                            },
+                        ],
+            });
+        }
+    }, [defaultData]);
 
     const [showCancelDialog, setShowCancelDialog] = useState(false);
 
@@ -76,12 +112,31 @@ export default function NewQuizForm({ onCancel }) {
         setQuiz({ ...quiz, questions: newQuestions });
     };
 
+    const validateQuiz = () => {
+        if (quiz.questions.length === 0) {
+            alert("Quiz phải có ít nhất 1 câu hỏi.");
+            return false;
+        }
+
+        for (let i = 0; i < quiz.questions.length; i++) {
+            if (quiz.questions[i].options.length < 2) {
+                alert(`Câu ${i + 1} phải có ít nhất 2 đáp án.`);
+                return false;
+            }
+        }
+
+        return true;
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        if (!validateQuiz()) return; // dừng nếu không hợp lệ
         try {
             const res = await quizService.create(quiz);
+            console.log("Quiz created:", res.data);
             alert("Quiz saved successfully!");
-            navigate("/quizzes"); // về danh sách quiz
+            navigate("/dashboard/my");
         } catch (err) {
             alert("Error saving quiz: " + (err.response?.data?.message || err.message));
             console.error(err);

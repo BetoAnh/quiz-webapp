@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { encryptData } from "@/utils/cryptoStorage";
 import { quizService } from "@/services";
 import NotFound from "@/components/common/NotFound";
@@ -119,8 +119,13 @@ export default function QuizDetail() {
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3 text-sm">
+                    <NavLink to={`/category/${quiz.category_id}`}>
+                        <span className="px-2 py-1 bg-gray-100 rounded-lg text-gray-700">
+                            {quiz.category?.name || "No category"}
+                        </span>
+                    </NavLink>
                     <span className="px-2 py-1 bg-gray-100 rounded-lg text-gray-700">
-                        {quiz.category?.name || "No category"}
+                        {`${quiz.level?.name} ${quiz.level?.parent?.name}` || "No level"}
                     </span>
                     <span className="px-2 py-1 bg-gray-100 rounded-lg text-gray-700 flex items-center gap-1">
                         {quiz.visibility === "public" ? (

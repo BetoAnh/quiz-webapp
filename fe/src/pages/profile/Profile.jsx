@@ -2,17 +2,15 @@ import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { userService } from "@/services";
-import ProfileSkeleton from "@/components/profile/ProfileSkeleton";
+import ProfileSkeleton from "@/components/skeletons/ProfileSkeleton";
 import NotFound from "@/components/common/NotFound";
 import QuizList from "@/components/quiz/QuizList";
 import { ClockIcon } from '@heroicons/react/24/solid';
 
 export default function ProfilePage() {
     const { identifier } = useParams();
-    const { user, setUser } = useAuth(); // current logged-in user
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [openEdit, setOpenEdit] = useState(false);
     const [quizzes, setQuizzes] = useState([]);
 
     const categories = [

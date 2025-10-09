@@ -2,9 +2,16 @@
 import { useState } from "react";
 import DashboardTabs from "@/components/dashboard/DashboardTabs";
 import NewQuizForm from "@/components/quiz/NewQuizForm";
+import UploadQuiz from "@/components/quiz/UploadQuiz";
 
 export default function NewQuizPage() {
     const [mode, setMode] = useState(null); // null | "manual" | "ai"
+    const [aiQuizData, setAiQuizData] = useState(null);
+
+    const handleAIGenerated = (quiz) => {
+        setAiQuizData(quiz);
+        setMode("manual"); // 👉 Chuyển sang form thủ công
+    };
 
     return (
         <div className="w-full max-w-5xl mx-auto py-6">
@@ -42,27 +49,11 @@ export default function NewQuizPage() {
                         </button>
 
                         {mode === "manual" && (
-                            <NewQuizForm onCancel={() => setMode(null)} />
+                            <NewQuizForm onCancel={() => setMode(null)} defaultData={aiQuizData} />
                         )}
 
                         {mode === "ai" && (
-                            <div className="p-6 border rounded-2xl shadow bg-gray-50">
-                                <h2 className="text-lg font-semibold mb-4">Sinh quiz bằng AI</h2>
-                                <input
-                                    type="file"
-                                    className="mb-4 block w-full text-sm text-gray-700 border rounded-lg px-3 py-2 focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
-                                />
-                                <textarea
-                                    placeholder="Hoặc dán nội dung tài liệu..."
-                                    className="w-full border rounded-lg p-3 text-sm focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
-                                    rows={6}
-                                />
-                                <div className="flex justify-end mt-4">
-                                    <button className="px-5 py-2 rounded-lg bg-violet-600 text-white hover:bg-violet-700 transition shadow">
-                                        Sinh câu hỏi
-                                    </button>
-                                </div>
-                            </div>
+                            <UploadQuiz onGenerated={handleAIGenerated} />
                         )}
                     </div>
                 )}

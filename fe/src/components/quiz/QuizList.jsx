@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { Menu } from "@headlessui/react";
 import QuizCard from "./QuizCard";
+import { levelService } from "@/services/levelService";
 
 function QuizSkeleton() {
     return (
@@ -20,10 +21,24 @@ function QuizSkeleton() {
 export default function QuizList({ quizzes, loading = false }) {
     const [search, setSearch] = useState("");
     const [selectedCategory, setSelectedCategory] = useState(null);
+    const [selectedLevel, setSelectedLevel] = useState(null);
+    const [levels, setLevels] = useState([]);
     const [page, setPage] = useState(1);
     const [visibleCount, setVisibleCount] = useState(6);
     const observerRef = useRef(null);
     const pageSize = 6;
+
+    useEffect(() => {
+        async function fetchLevels() {
+            try {
+                const res = await levelService.getAll();
+                setLevels(res.data || []);
+            } catch (err) {
+                console.error("Error fetching levels:", err);
+            }
+        }
+        fetchLevels();
+    }, []);
 
     // 👉 Sinh categories từ quizzes
     const categories = useMemo(() => {
@@ -45,8 +60,9 @@ export default function QuizList({ quizzes, loading = false }) {
                     q.description.toLowerCase().includes(search.toLowerCase())
                     : true
             )
-            .filter((q) => (selectedCategory ? q.category_id === selectedCategory : true));
-    }, [quizzes, search, selectedCategory]);
+            .filter((q) => (selectedCategory ? q.category_id === selectedCategory : true))
+            .filter((q) => (selectedLevel ? q.level_id === selectedLevel : true));
+    }, [quizzes, search, selectedCategory, selectedLevel]);
 
     const totalPage = Math.ceil(filtered.length / pageSize);
 
@@ -74,7 +90,7 @@ export default function QuizList({ quizzes, loading = false }) {
     return (
         <div className="w-full space-y-4">
             {/* Search + Filter */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between items-end gap-2">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                 {/* Search */}
                 <div className="relative w-full sm:w-1/3">
                     <MagnifyingGlassIcon className="absolute left-2 top-2.5 h-5 w-5 text-gray-400" />
@@ -91,52 +107,112 @@ export default function QuizList({ quizzes, loading = false }) {
                     />
                 </div>
 
-                {/* Category filter */}
-                {categories.length > 0 && (
-                    <Menu as="div" className="relative inline-block text-left">
-                        <Menu.Button className="px-4 py-2 border rounded-xl bg-white shadow-sm hover:bg-gray-50">
-                            {selectedCategory
-                                ? categories.find((c) => c.id === selectedCategory)?.name
-                                : "All Categories"}
-                        </Menu.Button>
-                        <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right rounded-xl bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
-                            <div className="py-1">
-                                <Menu.Item>
-                                    {({ active }) => (
-                                        <button
-                                            className={`block w-full text-left px-4 py-2 text-sm ${active ? "bg-gray-100" : ""
-                                                }`}
-                                            onClick={() => {
-                                                setSelectedCategory(null);
-                                                setPage(1);
-                                                setVisibleCount(pageSize);
-                                            }}
-                                        >
-                                            All Categories
-                                        </button>
-                                    )}
-                                </Menu.Item>
-                                {categories.map((c) => (
-                                    <Menu.Item key={c.id}>
+                <div className="gap-4 flex items-center justify-between">
+                    {levels.length > 0 && (
+                        <Menu as="div" className="relative inline-block text-left">
+                            <Menu.Button className="px-4 py-2 border rounded-xl bg-white shadow-sm hover:bg-gray-50">
+                                {selectedLevel
+                                    ? levels
+                                        .flatMap((g) => g.children) // tìm trong tất cả children
+                                        .find((l) => l.id === selectedLevel)?.name
+                                    : "All Levels"}
+                            </Menu.Button>
+                            <Menu.Items className="absolute left-0 mt-2 w-50 origin-top-right rounded-xl bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
+                                <div className="py-1">
+                                    {/* Tất cả */}
+                                    <Menu.Item>
                                         {({ active }) => (
                                             <button
                                                 className={`block w-full text-left px-4 py-2 text-sm ${active ? "bg-gray-100" : ""
                                                     }`}
                                                 onClick={() => {
-                                                    setSelectedCategory(c.id);
+                                                    setSelectedLevel(null);
                                                     setPage(1);
                                                     setVisibleCount(pageSize);
                                                 }}
                                             >
-                                                {c.name}
+                                                Tất cả
                                             </button>
                                         )}
                                     </Menu.Item>
-                                ))}
-                            </div>
-                        </Menu.Items>
-                    </Menu>
-                )}
+
+                                    {/* Group + children */}
+                                    {levels.map((group) => (
+                                        <div key={group.id}>
+                                            <div className="px-4 py-2 text-xs font-semibold text-gray-500">
+                                                {group.name}
+                                            </div>
+                                            {group.children.map((child) => (
+                                                <Menu.Item key={child.id}>
+                                                    {({ active }) => (
+                                                        <button
+                                                            className={`block w-full text-left px-4 py-2 text-sm ${active ? "bg-gray-100" : ""
+                                                                }`}
+                                                            onClick={() => {
+                                                                setSelectedLevel(child.id);
+                                                                setPage(1);
+                                                                setVisibleCount(pageSize);
+                                                            }}
+                                                        >
+                                                            {child.name}
+                                                        </button>
+                                                    )}
+                                                </Menu.Item>
+                                            ))}
+                                        </div>
+                                    ))}
+                                </div>
+                            </Menu.Items>
+                        </Menu>
+                    )}
+
+                    {/* Category filter */}
+                    {categories.length > 0 && (
+                        <Menu as="div" className="relative inline-block text-left">
+                            <Menu.Button className="px-4 py-2 border rounded-xl bg-white shadow-sm hover:bg-gray-50">
+                                {selectedCategory
+                                    ? categories.find((c) => c.id === selectedCategory)?.name
+                                    : "All Categories"}
+                            </Menu.Button>
+                            <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right rounded-xl bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
+                                <div className="py-1">
+                                    <Menu.Item>
+                                        {({ active }) => (
+                                            <button
+                                                className={`block w-full text-left px-4 py-2 text-sm ${active ? "bg-gray-100" : ""
+                                                    }`}
+                                                onClick={() => {
+                                                    setSelectedCategory(null);
+                                                    setPage(1);
+                                                    setVisibleCount(pageSize);
+                                                }}
+                                            >
+                                                All Categories
+                                            </button>
+                                        )}
+                                    </Menu.Item>
+                                    {categories.map((c) => (
+                                        <Menu.Item key={c.id}>
+                                            {({ active }) => (
+                                                <button
+                                                    className={`block w-full text-left px-4 py-2 text-sm ${active ? "bg-gray-100" : ""
+                                                        }`}
+                                                    onClick={() => {
+                                                        setSelectedCategory(c.id);
+                                                        setPage(1);
+                                                        setVisibleCount(pageSize);
+                                                    }}
+                                                >
+                                                    {c.name}
+                                                </button>
+                                            )}
+                                        </Menu.Item>
+                                    ))}
+                                </div>
+                            </Menu.Items>
+                        </Menu>
+                    )}
+                </div>
             </div>
 
             {/* Quiz Grid */}

@@ -19,6 +19,7 @@ class Quiz extends Model
     public $belongsTo = [
         'author' => [User::class, 'key' => 'author_id'],
         'category' => [Category::class, 'key' => 'category_id'],
+        'level' => [Level::class, 'key' => 'level_id'],
     ];
 
     public $hasMany = [

@@ -11,6 +11,8 @@ class JwtMiddleware
 {
     public function handle(Request $request, Closure $next)
     {
+        \Log::info('JWT_SECRET = ' . env('OPENAI_API_KEY'));
+
         $token = $request->cookie('authToken');
         if (!$token) {
             return response()->json(['error' => 'Unauthorized'], 401);

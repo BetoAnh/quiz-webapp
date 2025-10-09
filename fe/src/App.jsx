@@ -19,6 +19,7 @@ import MyQuizzes from "@/pages/dashboard/MyQuizzes";
 import SavedQuizzes from "@/pages/dashboard/SavedQuizzes";
 import NewQuizPage from "@/pages/dashboard/NewQuizPage";
 import Loading from "@/components/common/Loading";
+import UploadQuiz from "@/components/quiz/UploadQuiz";
 
 function App() {
   return (
@@ -41,8 +42,9 @@ function App() {
             <Route path="/profile/:identifier" element={<Profile />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/categories/:idAndSlug" element={<CategoryDetail />} />
+            <Route path="/category/:idAndSlug" element={<CategoryDetail />} />
             <Route path="*" element={<NotFound message="Không tìm thấy trang" />} />
+            <Route path="/upload-quiz" element={<PrivateRoute><UploadQuiz /></PrivateRoute>} />
           </Routes>
         </BrowserRouter>
       </AuthProvider >

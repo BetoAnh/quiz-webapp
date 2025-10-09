@@ -13,7 +13,7 @@ class QuizController extends Controller
 {
     public function index()
     {
-        $quizzes = Quiz::with('author:id,first_name,last_name')->get();
+        $quizzes = Quiz::with('author:id,first_name,last_name', 'category:id,name')->get();
         return response()->json($quizzes);
     }
 
@@ -35,7 +35,10 @@ class QuizController extends Controller
     {
         $quiz = Quiz::with([
             'questions',
-            'author:id,first_name,last_name'
+            'author:id,first_name,last_name',
+            'category:id,name',
+            'level:id,name,parent_id',
+            'level.parent:id,name',
         ])->find($id);
 
         if (!$quiz) {

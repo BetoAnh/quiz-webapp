@@ -1,3 +1,5 @@
+import QuizListSkeleton from "./QuizListSkeleton";
+
 export default function ProfileSkeleton() {
     return (
         <div className="py-6">
@@ -19,17 +21,10 @@ export default function ProfileSkeleton() {
                 </div>
             </div>
 
+
             {/* Quizzes skeleton */}
             <div className="mt-8 bg-white rounded-2xl shadow-md p-6 animate-pulse">
-                <div className="h-6 bg-gray-200 rounded w-32 mb-4"></div>
-                <div className="space-y-4">
-                    {[...Array(3)].map((_, i) => (
-                        <div
-                            key={i}
-                            className="h-20 bg-gray-200 rounded-xl"
-                        ></div>
-                    ))}
-                </div>
+                <QuizListSkeleton />
             </div>
         </div>
     );

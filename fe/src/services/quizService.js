@@ -18,4 +18,21 @@ export const quizService = {
   delete: (id) => api.delete(`/quizzes/${id}`),
 
   myquizzes: () => api.get("/myquizzes"),
+
+  generateQuiz: async (file, numQuestions) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    if (numQuestions) formData.append("numQuestions", numQuestions); // chỉ append nếu có
+
+    try {
+      const res = await api.post("/generate-quiz", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+        timeout: 120000, // ✅ thêm timeout 120 giây để tránh bị treo (Guzzle hay timeout 60s)
+      });
+      return res;
+    } catch (error) {
+      console.error("❌ API /generate-quiz error:", error);
+      throw error;
+    }
+  },
 };

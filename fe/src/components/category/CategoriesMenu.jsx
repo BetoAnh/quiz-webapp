@@ -74,7 +74,7 @@ export default function CategoriesMenu() {
                                     {activeParent.children.map((child) => (
                                         <a
                                             key={child.id}
-                                            href={`/categories/${child.id}-${child.slug}`}
+                                            href={`/category/${child.id}-${child.slug}`}
                                             className="block px-2 py-1 font-medium text-gray-700 hover:bg-gray-100 rounded"
                                         >
                                             {child.name}
@@ -82,7 +82,7 @@ export default function CategoriesMenu() {
                                     ))}
                                     {activeParent.id !== "others" && (
                                         <a
-                                            href={`/categories/${activeParent.id}-${activeParent.slug}`}
+                                            href={`/category/${activeParent.id}-${activeParent.slug}`}
                                             className="block px-2 py-1 font-medium text-gray-700 hover:bg-gray-100 rounded"
                                         >
                                             Khác
@@ -151,7 +151,7 @@ export default function CategoriesMenu() {
                                             {cat.children?.map((child) => (
                                                 <a
                                                     key={child.id}
-                                                    href={`/categories/${child.id}-${child.slug}`}
+                                                    href={`/category/${child.id}-${child.slug}`}
                                                     className="block px-2 py-1 text-gray-600 hover:bg-gray-100 rounded"
                                                 >
                                                     {child.name}
@@ -159,7 +159,7 @@ export default function CategoriesMenu() {
                                             ))}
                                             {cat.id !== "others" && cat.children?.length > 0 && (
                                                 <a
-                                                    href={`/categories/${cat.id}-${cat.slug}`}
+                                                    href={`/category/${cat.id}-${cat.slug}`}
                                                     className="block px-2 py-1 font-medium text-gray-600 hover:bg-gray-100 rounded"
                                                 >
                                                     Khác
