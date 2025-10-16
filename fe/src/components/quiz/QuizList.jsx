@@ -1,8 +1,11 @@
-import { useState, useMemo, useEffect, useRef } from "react";
+import { React, useState, useMemo, useEffect, useRef } from "react";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { Menu } from "@headlessui/react";
 import QuizCard from "./QuizCard";
 import { levelService } from "@/services/levelService";
+import { toast } from "react-hot-toast";
+import { quizService } from "@/services";
+
 
 function QuizSkeleton() {
     return (
@@ -18,10 +21,11 @@ function QuizSkeleton() {
     );
 }
 
-export default function QuizList({ quizzes, loading = false }) {
+export default function QuizList({ quizzes, loading = false, updateQuizzes }) {
     const [search, setSearch] = useState("");
     const [selectedCategory, setSelectedCategory] = useState(null);
     const [selectedLevel, setSelectedLevel] = useState(null);
+    const [selectedVisibility, setSelectedVisibility] = useState(null);
     const [levels, setLevels] = useState([]);
     const [page, setPage] = useState(1);
     const [visibleCount, setVisibleCount] = useState(6);
@@ -51,6 +55,11 @@ export default function QuizList({ quizzes, loading = false }) {
         return Array.from(map, ([id, name]) => ({ id, name }));
     }, [quizzes]);
 
+    // 👉 Chỉ hiển thị menu nếu có quiz private
+    const hasPrivateQuiz = useMemo(() => {
+        return quizzes.some((q) => q.visibility === "private");
+    }, [quizzes]);
+
     // Lọc dữ liệu
     const filtered = useMemo(() => {
         return quizzes
@@ -61,8 +70,9 @@ export default function QuizList({ quizzes, loading = false }) {
                     : true
             )
             .filter((q) => (selectedCategory ? q.category_id === selectedCategory : true))
-            .filter((q) => (selectedLevel ? q.level_id === selectedLevel : true));
-    }, [quizzes, search, selectedCategory, selectedLevel]);
+            .filter((q) => (selectedLevel ? q.level_id === selectedLevel : true))
+            .filter((q) => (selectedVisibility ? q.visibility === selectedVisibility : true));
+    }, [quizzes, search, selectedCategory, selectedLevel, selectedVisibility]);
 
     const totalPage = Math.ceil(filtered.length / pageSize);
 
@@ -87,6 +97,17 @@ export default function QuizList({ quizzes, loading = false }) {
         return () => observer.disconnect();
     }, [filtered]);
 
+    const deleteQuiz = async (id) => {
+        try {
+            await quizService.delete(id);
+            toast.success("Đã xóa quiz thành công!");
+            if (updateQuizzes) updateQuizzes();
+        } catch (err) {
+            toast.error("❌ Lỗi khi xóa quiz: " + (err.response?.data?.message || err.message));
+            console.error("Error deleting quiz:", err);
+        }
+    };
+
     return (
         <div className="w-full space-y-4">
             {/* Search + Filter */}
@@ -108,6 +129,51 @@ export default function QuizList({ quizzes, loading = false }) {
                 </div>
 
                 <div className="gap-4 flex items-center justify-between">
+                    {hasPrivateQuiz && (
+                        <Menu as="div" className="relative inline-block text-left">
+                            <Menu.Button className="px-4 py-2 border rounded-xl bg-white shadow-sm hover:bg-gray-50">
+                                {selectedVisibility
+                                    ? selectedVisibility === "public"
+                                        ? "Công khai"
+                                        : "Riêng tư"
+                                    : "Tất cả trạng thái"}
+                            </Menu.Button>
+                            <Menu.Items className="absolute left-0 mt-2 w-48 origin-top-right rounded-xl bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
+                                <div className="py-1">
+                                    <Menu.Item>
+                                        {({ active }) => (
+                                            <button
+                                                className={`block w-full text-left px-4 py-2 text-sm ${active ? "bg-gray-100" : ""}`}
+                                                onClick={() => setSelectedVisibility(null)}
+                                            >
+                                                Tất cả
+                                            </button>
+                                        )}
+                                    </Menu.Item>
+                                    <Menu.Item>
+                                        {({ active }) => (
+                                            <button
+                                                className={`block w-full text-left px-4 py-2 text-sm ${active ? "bg-gray-100" : ""}`}
+                                                onClick={() => setSelectedVisibility("public")}
+                                            >
+                                                Công khai
+                                            </button>
+                                        )}
+                                    </Menu.Item>
+                                    <Menu.Item>
+                                        {({ active }) => (
+                                            <button
+                                                className={`block w-full text-left px-4 py-2 text-sm ${active ? "bg-gray-100" : ""}`}
+                                                onClick={() => setSelectedVisibility("private")}
+                                            >
+                                                Riêng tư
+                                            </button>
+                                        )}
+                                    </Menu.Item>
+                                </div>
+                            </Menu.Items>
+                        </Menu>
+                    )}
                     {levels.length > 0 && (
                         <Menu as="div" className="relative inline-block text-left">
                             <Menu.Button className="px-4 py-2 border rounded-xl bg-white shadow-sm hover:bg-gray-50">
@@ -115,7 +181,7 @@ export default function QuizList({ quizzes, loading = false }) {
                                     ? levels
                                         .flatMap((g) => g.children) // tìm trong tất cả children
                                         .find((l) => l.id === selectedLevel)?.name
-                                    : "All Levels"}
+                                    : "Tất cả cấp độ"}
                             </Menu.Button>
                             <Menu.Items className="absolute left-0 mt-2 w-50 origin-top-right rounded-xl bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
                                 <div className="py-1">
@@ -172,7 +238,7 @@ export default function QuizList({ quizzes, loading = false }) {
                             <Menu.Button className="px-4 py-2 border rounded-xl bg-white shadow-sm hover:bg-gray-50">
                                 {selectedCategory
                                     ? categories.find((c) => c.id === selectedCategory)?.name
-                                    : "All Categories"}
+                                    : "Tất cả danh mục"}
                             </Menu.Button>
                             <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right rounded-xl bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
                                 <div className="py-1">
@@ -187,7 +253,7 @@ export default function QuizList({ quizzes, loading = false }) {
                                                     setVisibleCount(pageSize);
                                                 }}
                                             >
-                                                All Categories
+                                                Tất cả
                                             </button>
                                         )}
                                     </Menu.Item>
@@ -223,7 +289,7 @@ export default function QuizList({ quizzes, loading = false }) {
                         {loading
                             ? [...Array(6)].map((_, i) => <QuizSkeleton key={i} />)
                             : infiniteData.length > 0
-                                ? infiniteData.map((quiz) => <QuizCard key={quiz.id} quiz={quiz} />)
+                                ? infiniteData.map((quiz) => <QuizCard key={quiz.id} quiz={quiz} onDelete={(id) => deleteQuiz(id)} />)
                                 : <p className="text-center text-gray-500">No quiz found</p>}
                         {!loading && infiniteData.length < filtered.length && (
                             <div ref={observerRef} className="h-8"></div>

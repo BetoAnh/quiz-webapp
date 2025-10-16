@@ -88,7 +88,9 @@ Route::group([
 
         Route::post('/quizzes', [QuizController::class, 'store']);       // Tạo quiz mới
         // Xem chi tiết quiz
-        Route::put('/quizzes/{id}', [QuizController::class, 'update']);  // Cập nhật quiz
+        Route::put('/quizzes/{id}', [QuizController::class, 'update']);
+        Route::patch('/quizzes/{id}', [QuizController::class, 'update']); // optional
+
         Route::delete('/quizzes/{id}', [QuizController::class, 'destroy']); // Xóa quiz
 
         Route::put('/users/profile', [UserController::class, 'updateProfile']);

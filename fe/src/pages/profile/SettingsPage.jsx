@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { userService } from "@/services";
 import { Dialog, DialogPanel } from "@headlessui/react";
 

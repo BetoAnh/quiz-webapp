@@ -4,6 +4,8 @@ import { encryptData } from "@/utils/cryptoStorage";
 import { quizService } from "@/services";
 import NotFound from "@/components/common/NotFound";
 import { EyeIcon, LockClosedIcon } from "@heroicons/react/24/solid";
+import { useAuth } from "@/contexts/AuthContext";
+import { PencilSquareIcon } from "@heroicons/react/24/solid";
 
 // Hàm shuffle array
 const shuffleArray = (arr) => {
@@ -17,6 +19,7 @@ const shuffleArray = (arr) => {
 
 export default function QuizDetail() {
     const { idAndSlug } = useParams();
+    const { user } = useAuth();
     const [id] = idAndSlug.split("-");
     const [quiz, setQuiz] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -175,6 +178,17 @@ export default function QuizDetail() {
                     >
                         Thi thử
                     </button>
+                    {user && (quiz.author_id === user.id || quiz.author?.id === user.id) && (
+                        <button
+                            onClick={() =>
+                                navigate(`/quiz/${quiz.id}/edit`)
+                            }
+                            className="flex items-center gap-2 px-6 py-2 rounded-lg bg-gray-500 text-white font-medium hover:bg-gray-600 transition"
+                        >
+                            <PencilSquareIcon className="h-5 w-5" />
+                            Chỉnh sửa
+                        </button>
+                    )}
                 </div>
             </div>
 

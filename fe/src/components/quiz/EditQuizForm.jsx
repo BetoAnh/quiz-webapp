@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Dialog, RadioGroup } from "@headlessui/react";
 import { PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { quizService } from "@/services";
@@ -7,21 +7,19 @@ import { levelService } from "@/services/levelService";
 import { categoryService } from "@/services/categoryService";
 import toast from "react-hot-toast";
 
-export default function NewQuizForm({ onCancel, defaultData }) {
+export default function EditQuizForm({ onCancel, quizId: propQuizId }) {
     const navigate = useNavigate();
+    const { id: routeQuizId } = useParams();
+    const quizId = propQuizId || routeQuizId;
+
+    const [quiz, setQuiz] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [showCancelDialog, setShowCancelDialog] = useState(false);
     const [categories, setCategories] = useState([]);
     const [levels, setLevels] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState("");
     const [selectedLevel, setSelectedLevel] = useState("");
 
-    const [quiz, setQuiz] = useState({
-        title: "",
-        description: "",
-        visibility: "public",
-        questions: [
-            { id: 0, text: "", options: [{ id: 0, text: "" }], correctId: 0 },
-        ],
-    });
 
     useEffect(() => {
         const fetchMeta = async () => {
@@ -39,42 +37,6 @@ export default function NewQuizForm({ onCancel, defaultData }) {
         fetchMeta();
     }, []);
 
-    useEffect(() => {
-        if (defaultData) {
-            const mappedQuestions = defaultData.questions?.map((q, i) => ({
-                id: i,
-                text: q.text || "",
-                options: (q.options || []).map((opt, j) => ({
-                    id: j,
-                    text: opt.text || opt || "", // hỗ trợ cả trường hợp AI trả chuỗi thô
-                })),
-                correctId:
-                    typeof q.correctId === "number"
-                        ? q.correctId
-                        : q.correctIndex ?? 0,
-            })) || [];
-
-            setQuiz({
-                title: defaultData.title || "Quiz được sinh bởi AI",
-                description:
-                    defaultData.description ||
-                    "Quiz này được sinh tự động từ tài liệu của bạn.",
-                visibility: "public",
-                questions:
-                    mappedQuestions.length > 0
-                        ? mappedQuestions
-                        : [
-                            {
-                                id: 0,
-                                text: "",
-                                options: [{ id: 0, text: "" }],
-                                correctId: 0,
-                            },
-                        ],
-            });
-        }
-    }, [defaultData]);
-
     const renderCategoryOptions = (categories, prefix = "") => {
         return categories.flatMap((cat) => [
             <option key={cat.id} value={cat.id}>
@@ -85,10 +47,59 @@ export default function NewQuizForm({ onCancel, defaultData }) {
                 : []),
         ]);
     };
+    // ===== LOAD EXISTING QUIZ =====
+    useEffect(() => {
+        const fetchQuiz = async () => {
+            try {
+                const res = await quizService.getById(quizId);
+                const data = res.data;
 
-    const [showCancelDialog, setShowCancelDialog] = useState(false);
+                // Normalize questions & options
+                const mappedQuestions =
+                    data.questions?.map((q, i) => ({
+                        id: q.id ?? i,
+                        text: q.text || "",
+                        options: (q.options || []).map((opt, j) =>
+                            typeof opt === "string"
+                                ? { id: j, text: opt }
+                                : { id: opt.id ?? j, text: opt.text || "" }
+                        ),
+                        correctId:
+                            typeof q.correct_id === "number"
+                                ? q.correct_id
+                                : q.correctIndex ?? 0,
+                    })) || [];
 
-    // ==== HANDLERS ====
+                setQuiz({
+                    title: data.title || "",
+                    description: data.description || "",
+                    visibility: data.visibility || "public",
+                    questions:
+                        mappedQuestions.length > 0
+                            ? mappedQuestions
+                            : [
+                                {
+                                    id: 0,
+                                    text: "",
+                                    options: [{ id: 0, text: "" }],
+                                    correctId: 0,
+                                },
+                            ],
+                });
+                setSelectedCategory(data.category_id || "");
+                setSelectedLevel(data.level_id || "");
+            } catch (err) {
+                toast.error("Không tải được quiz: " + (err.response?.data?.message || err.message));
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchQuiz();
+    }, [quizId]);
+
+    // ===== HANDLERS =====
     const handleQuizChange = (e) => {
         setQuiz({ ...quiz, [e.target.name]: e.target.value });
     };
@@ -110,7 +121,6 @@ export default function NewQuizForm({ onCancel, defaultData }) {
         newQuestions[qIndex].correctId = oIndex;
         setQuiz({ ...quiz, questions: newQuestions });
     };
-
 
     const addQuestion = () => {
         const newId = quiz.questions.length;
@@ -172,30 +182,47 @@ export default function NewQuizForm({ onCancel, defaultData }) {
         return true;
     };
 
+    // ===== SUBMIT =====
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (!validateQuiz()) return;
 
-        if (!validateQuiz()) return; // dừng nếu không hợp lệ
         try {
-            const dataToSend = {
-                ...quiz,
-                category_id: selectedCategory,
-                level_id: selectedLevel,
+            // ✅ Chuẩn hóa trước khi gửi
+            const payload = {
+                title: quiz.title,
+                description: quiz.description,
+                visibility: quiz.visibility,
+                category_id: selectedCategory || null,
+                level_id: selectedLevel || null,
+                questions: quiz.questions.map((q) => ({
+                    id: q.id,
+                    text: q.text,
+                    options: q.options.map((opt, i) => ({
+                        id: opt.id ?? i,
+                        text: opt.text ?? "",
+                    })),
+                    correctId:
+                        typeof q.correctId === "number" ? q.correctId : parseInt(q.correctId) || 0,
+                })),
             };
-            console.log(dataToSend);
 
-            const res = await quizService.create(dataToSend);
-            toast.success("Quiz saved successfully!");
-            navigate("/dashboard/my");
+            const res = await quizService.update(quizId, payload);
+            toast.success("✅ Quiz cập nhật thành công!");
+            navigate(`/quiz/${quizId}`, { replace: true });
+
         } catch (err) {
-            toast.error("Error saving quiz: " + (err.response?.data?.message || err.message));
             console.error(err);
+            toast.error("❌ Lỗi khi cập nhật quiz: " + (err.response?.data?.message || err.message));
         }
     };
 
-    // ==== JSX ====
+    if (loading || !quiz)
+        return <div className="p-8 text-gray-600">Đang tải quiz...</div>;
+
+    // ===== RENDER =====
     return (
-        <div className="">
+        <div className="mt-8">
             <form
                 onSubmit={handleSubmit}
                 className="space-y-8 bg-white rounded-2xl shadow-xl p-8"
@@ -303,6 +330,7 @@ export default function NewQuizForm({ onCancel, defaultData }) {
                     </div>
                 </div>
 
+
                 {/* Questions */}
                 <div>
                     <h2 className="text-xl font-bold text-gray-900">Câu hỏi</h2>
@@ -349,7 +377,6 @@ export default function NewQuizForm({ onCancel, defaultData }) {
                                             }
                                             className="flex-1 rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                                             placeholder={`Đáp án ${oIndex + 1}`}
-                                            onClick={(e) => e.stopPropagation()}
                                             required
                                         />
                                         <input
@@ -396,13 +423,13 @@ export default function NewQuizForm({ onCancel, defaultData }) {
                         onClick={() => setShowCancelDialog(true)}
                         className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition"
                     >
-                        Cancel
+                        Hủy
                     </button>
                     <button
                         type="submit"
                         className="rounded-lg bg-indigo-600 px-6 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 transition"
                     >
-                        Save Quiz
+                        Lưu Quiz
                     </button>
                 </div>
             </form>
@@ -417,18 +444,17 @@ export default function NewQuizForm({ onCancel, defaultData }) {
                 <div className="fixed inset-0 flex items-center justify-center p-4">
                     <Dialog.Panel className="mx-auto max-w-sm rounded-xl bg-white p-6 shadow-lg">
                         <Dialog.Title className="text-lg font-semibold text-gray-900">
-                            Cancel quiz creation?
+                            Hủy chỉnh sửa quiz?
                         </Dialog.Title>
                         <Dialog.Description className="mt-2 text-sm text-gray-600">
-                            All unsaved changes will be lost.
+                            Mọi thay đổi chưa lưu sẽ bị mất.
                         </Dialog.Description>
-
                         <div className="mt-6 flex justify-end gap-3">
                             <button
                                 className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 transition"
                                 onClick={() => setShowCancelDialog(false)}
                             >
-                                No
+                                Không
                             </button>
                             <button
                                 className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-500 transition"
@@ -437,7 +463,7 @@ export default function NewQuizForm({ onCancel, defaultData }) {
                                     onCancel?.();
                                 }}
                             >
-                                Yes, Cancel
+                                Có, hủy bỏ
                             </button>
                         </div>
                     </Dialog.Panel>

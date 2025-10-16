@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { userService } from "@/services";
 import ProfileSkeleton from "@/components/skeletons/ProfileSkeleton";
 import NotFound from "@/components/common/NotFound";

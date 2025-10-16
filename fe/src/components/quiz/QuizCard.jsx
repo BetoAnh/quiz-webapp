@@ -1,9 +1,10 @@
-import { EyeIcon, LockClosedIcon, EllipsisVerticalIcon } from "@heroicons/react/24/solid";
+import { EyeIcon, LockClosedIcon, EllipsisVerticalIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { Menu } from "@headlessui/react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "react-hot-toast";
 
-function QuizCard({ quiz }) {
+function QuizCard({ quiz, onDelete }) {
     const navigate = useNavigate();
     const { user } = useAuth();
     const isPublic = quiz.visibility === "public";
@@ -28,6 +29,43 @@ function QuizCard({ quiz }) {
     const handleEdit = (e) => {
         e.stopPropagation();
         navigate(`/quiz/${quiz.id}/edit`);
+    };
+
+    const handleDelete = (e) => {
+        e.stopPropagation();
+        toast((t) => (
+            <div className="flex flex-col gap-3">
+                <p className="text-sm text-gray-800">
+                    🗑️ Bạn có chắc muốn <b>xóa quiz</b> này không?
+                </p>
+                <div className="flex justify-end gap-2">
+                    <button
+                        onClick={() => toast.dismiss(t.id)}
+                        className="px-3 py-1 text-sm rounded-lg bg-gray-200 hover:bg-gray-300"
+                    >
+                        Hủy
+                    </button>
+                    <button
+                        onClick={() => {
+                            toast.dismiss(t.id);
+                            if (onDelete) onDelete(quiz.id);
+                            toast.success("Đã xóa quiz thành công!");
+                        }}
+                        className="px-3 py-1 text-sm rounded-lg bg-red-500 text-white hover:bg-red-600"
+                    >
+                        Xóa
+                    </button>
+                </div>
+            </div>
+        ), {
+            duration: 4000,
+            position: "top-center",
+            style: {
+                background: "#fff",
+                borderRadius: "10px",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+            },
+        });
     };
 
     return (
@@ -88,17 +126,30 @@ function QuizCard({ quiz }) {
                                 )}
                             </Menu.Item>
                             {isOwner && (
-                                <Menu.Item>
-                                    {({ active }) => (
-                                        <button
-                                            onClick={handleEdit}
-                                            className={`w-full text-left px-4 py-2 text-sm ${active ? "bg-gray-100" : ""
-                                                }`}
-                                        >
-                                            ✏️ Chỉnh sửa
-                                        </button>
-                                    )}
-                                </Menu.Item>
+                                <>
+                                    <Menu.Item>
+                                        {({ active }) => (
+                                            <button
+                                                onClick={handleEdit}
+                                                className={`w-full text-left px-4 py-2 text-sm ${active ? "bg-gray-100" : ""
+                                                    }`}
+                                            >
+                                                ✏️ Chỉnh sửa
+                                            </button>
+                                        )}
+                                    </Menu.Item>
+                                    <Menu.Item>
+                                        {({ active }) => (
+                                            <button
+                                                onClick={handleDelete}
+                                                className={`w-full text-left px-4 py-2 text-sm text-red-600 ${active ? "bg-red-50" : ""}`}
+                                            >
+                                                🗑️ Xóa
+                                            </button>
+
+                                        )}
+                                    </Menu.Item>
+                                </>
                             )}
                         </Menu.Items>
                     </Menu>

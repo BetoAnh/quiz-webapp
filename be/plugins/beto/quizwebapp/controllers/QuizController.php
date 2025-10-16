@@ -54,6 +54,11 @@ class QuizController extends Controller
     {
         $request->validate([
             'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'visibility' => 'nullable|string|in:public,private',
+            'category_id' => 'nullable|integer',
+            'level_id' => 'nullable|integer',
+            'questions' => 'array|min:1',
             'questions.*.text' => 'required|string',
             'questions.*.options' => 'required|array|min:2',
             'questions.*.correctId' => 'nullable|integer',
@@ -70,6 +75,8 @@ class QuizController extends Controller
             $quiz->slug = $request->slug ?? Str::slug($request->title . '-' . Str::random(5));
             $quiz->description = $request->description ?? '';
             $quiz->visibility = $request->visibility ?? 'public';
+            $quiz->category_id = $request->category_id ?? null;
+            $quiz->level_id = $request->level_id ?? null;
             $quiz->author_id = $user->id;
             $quiz->save();
 
@@ -87,6 +94,81 @@ class QuizController extends Controller
             ], 201);
         });
     }
+
+    /**
+     * API: Cập nhật quiz + questions
+     */
+    public function update(Request $request, $id)
+    {
+        $quiz = Quiz::with('questions')->find($id);
+        if (!$quiz) {
+            return response()->json(['error' => 'Quiz not found'], 404);
+        }
+
+        $user = $request->user();
+        if (!$user || $quiz->author_id !== $user->id) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'visibility' => 'nullable|string|in:public,private',
+            'category_id' => 'nullable|integer',
+            'level_id' => 'nullable|integer',
+            'questions' => 'array|min:1',
+            'questions.*.text' => 'required|string',
+            'questions.*.options' => 'required|array|min:2',
+            'questions.*.correctId' => 'nullable|integer',
+        ]);
+
+        return DB::transaction(function () use ($request, $quiz) {
+            // --- Cập nhật quiz ---
+            $quiz->title = $request->title;
+            $quiz->description = $request->description ?? '';
+            $quiz->visibility = $request->visibility ?? 'public';
+            $quiz->category_id = $request->category_id ?? null;
+            $quiz->level_id = $request->level_id ?? null;
+            $quiz->save();
+
+            // --- Đồng bộ câu hỏi ---
+            $existingIds = $quiz->questions->pluck('id')->toArray();
+            $sentIds = [];
+
+            foreach ($request->questions as $q) {
+                // Nếu có id => update
+                if (!empty($q['id']) && in_array($q['id'], $existingIds)) {
+                    $question = $quiz->questions->firstWhere('id', $q['id']);
+                    $question->update([
+                        'text' => $q['text'],
+                        'options' => $q['options'],
+                        'correct_id' => $q['correctId'] ?? null,
+                    ]);
+                    $sentIds[] = $q['id'];
+                } else {
+                    // Tạo mới
+                    $new = $quiz->questions()->create([
+                        'text' => $q['text'],
+                        'options' => $q['options'],
+                        'correct_id' => $q['correctId'] ?? null,
+                    ]);
+                    $sentIds[] = $new->id;
+                }
+            }
+
+            // Xóa các câu hỏi bị loại bỏ
+            $toDelete = array_diff($existingIds, $sentIds);
+            if (!empty($toDelete)) {
+                Question::whereIn('id', $toDelete)->delete();
+            }
+
+            return response()->json([
+                'success' => true,
+                'quiz' => $quiz->load('questions')
+            ]);
+        });
+    }
+
 
 
     /**

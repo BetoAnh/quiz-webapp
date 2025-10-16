@@ -13,7 +13,6 @@ export default function MyQuizzes() {
         async function fetchData() {
             try {
                 const res = await quizService.myquizzes();
-                console.log("Fetched quizzes:", res.data);
 
                 if (isMounted && Array.isArray(res.data)) {
                     // 🔹 Sắp xếp giảm dần theo thời gian tạo (mới nhất trước)
