@@ -99,12 +99,12 @@ export default function QuizList({ quizzes, loading = false, updateQuizzes }) {
 
     const deleteQuiz = async (id) => {
         try {
-            await quizService.delete(id);
-            toast.success("Đã xóa quiz thành công!");
+            const res = await quizService.delete(id);
+            toast.success("Đã xóa quiz thành công!", res.data);
             if (updateQuizzes) updateQuizzes();
         } catch (err) {
-            toast.error("❌ Lỗi khi xóa quiz: " + (err.response?.data?.message || err.message));
             console.error("Error deleting quiz:", err);
+            toast.error("Lỗi khi xóa quiz: " + (err.response?.data?.message || err.message));
         }
     };
 
@@ -302,7 +302,7 @@ export default function QuizList({ quizzes, loading = false, updateQuizzes }) {
                     {loading
                         ? [...Array(6)].map((_, i) => <QuizSkeleton key={i} />)
                         : paginated.length > 0
-                            ? paginated.map((quiz) => <QuizCard key={quiz.id} quiz={quiz} />)
+                            ? paginated.map((quiz) => <QuizCard key={quiz.id} quiz={quiz} onDelete={(id) => deleteQuiz(id)} />)
                             : <p className="col-span-full text-center text-gray-500">No quiz found</p>}
                 </div>
             </div>

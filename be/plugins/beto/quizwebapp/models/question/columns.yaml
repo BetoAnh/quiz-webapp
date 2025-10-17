@@ -1,12 +1,11 @@
 columns:
-    title:
-        label: Title
+    text:
+        label: 'Câu hỏi'
         type: text
         searchable: true
         invisible: false
         sortable: true
-    created_at:
-        label: 'Ngày tạo'
-        type: datetime
+    id:
+        label: ID
+        type: number
         searchable: false
-        sortable: true

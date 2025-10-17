@@ -10,6 +10,7 @@ use Beto\Quizwebapp\Controllers\UserController;
 use Beto\Quizwebapp\Controllers\SearchController;
 use Beto\Quizwebapp\Controllers\CategoryController;
 use Beto\Quizwebapp\Controllers\ApiLevelController;
+use Beto\Quizwebapp\Controllers\HomeController;
 use Beto\Quizwebapp\Classes\QuizGenerator;
 use Illuminate\Http\Request;
 
@@ -33,6 +34,10 @@ Route::group([
     Route::get('/users/username/{username}', [UserController::class, 'getByUsername']);
 
     Route::get('/search', [SearchController::class, 'search']);
+
+    // 📘 Trang chủ: danh sách quiz mới nhất và nổi bật
+    Route::get('/home/latest', [HomeController::class, 'latest']);
+    Route::get('/home/featured', [HomeController::class, 'featured']);
 
     Route::get('/categories', function () {
         return Cache::remember('categories_tree', 60 * 60, function () {

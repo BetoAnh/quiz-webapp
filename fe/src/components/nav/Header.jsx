@@ -78,7 +78,7 @@ export default function Header() {
                 {/* User / Login */}
                 <div className="flex gap-4 items-center space-x-4">
                     <a
-                        href="/create"
+                        href="/dashboard/new"
                         className="block text-sm font-semibold text-indigo-600 hover:text-indigo-800"
                     >
                         + Tạo

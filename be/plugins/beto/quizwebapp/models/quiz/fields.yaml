@@ -43,3 +43,22 @@ fields:
         descriptionFrom: description
         emptyOption: '------'
         type: relation
+    questions:
+        label: 'Danh sách câu hỏi'
+        span: full
+        type: relation
+        controller:
+            label: 'Câu hỏi'
+            list: ~/plugins/beto/quizwebapp/models/question/columns.yaml
+            form: ~/plugins/beto/quizwebapp/models/question/fields.yaml
+        manage:
+            form: ~/plugins/beto/quizwebapp/models/question/fields.yaml
+            list: ~/plugins/beto/quizwebapp/models/question/columns.yaml
+            readOnly: true
+            showSearch: true
+        view:
+            showSearch: true
+            list: ~/plugins/beto/quizwebapp/models/question/columns.yaml
+            toolbarButtons: false
+
+    

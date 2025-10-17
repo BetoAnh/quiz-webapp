@@ -35,4 +35,7 @@ export const quizService = {
       throw error;
     }
   },
+
+  getLatest: (limit = 10) => api.get("/home/latest", { params: { limit } }),
+  getFeatured: (limit = 10) => api.get("/home/featured", { params: { limit } }),
 };

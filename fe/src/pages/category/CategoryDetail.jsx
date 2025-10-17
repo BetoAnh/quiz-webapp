@@ -12,19 +12,18 @@ export default function CategoryDetail() {
     const [quizzes, setQuizzes] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        async function fetchData() {
-            try {
-                // Lấy chi tiết category + quiz
-                const res = await categoryService.getDetail(categoryId);
-                if (res.data.success) {
-                    setCategory(res.data.data.category);
-                    setQuizzes(res.data.data.quizzes);
-                }
-            } finally {
-                setLoading(false);
+    const fetchData = async () => {
+        try {
+            const res = await categoryService.getDetail(categoryId);
+            if (res.data.success) {
+                setCategory(res.data.data.category);
+                setQuizzes(res.data.data.quizzes);
             }
+        } finally {
+            setLoading(false);
         }
+    };
+    useEffect(() => {
         fetchData();
     }, [categoryId]);
 
@@ -48,6 +47,7 @@ export default function CategoryDetail() {
             <QuizList
                 quizzes={quizzes}
                 loading={loading}
+                updateQuizzes={fetchData}
             />
         </div>
     );

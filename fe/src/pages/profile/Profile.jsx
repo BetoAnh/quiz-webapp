@@ -80,6 +80,7 @@ export default function ProfilePage() {
                     quizzes={quizzes}
                     loading={loading}
                     categories={categories}
+                    updateQuizzes={() => fetchProfile()}
                 />
             </div>
         </div>

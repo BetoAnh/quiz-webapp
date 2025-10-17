@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import DashboardTabs from "@/components/dashboard/DashboardTabs";
 import QuizList from "@/components/quiz/QuizList";
 import { quizService } from "@/services";
@@ -7,33 +7,28 @@ export default function MyQuizzes() {
     const [loading, setLoading] = useState(true);
     const [quizzes, setQuizzes] = useState([]);
 
-    useEffect(() => {
-        let isMounted = true;
+    const fetchData = useCallback(async () => {
+        setLoading(true);
+        try {
+            const res = await quizService.myquizzes();
 
-        async function fetchData() {
-            try {
-                const res = await quizService.myquizzes();
-
-                if (isMounted && Array.isArray(res.data)) {
-                    // 🔹 Sắp xếp giảm dần theo thời gian tạo (mới nhất trước)
-                    const sorted = [...res.data].sort(
-                        (a, b) => new Date(b.created_at) - new Date(a.created_at)
-                    );
-
-                    setQuizzes(sorted);
-                }
-            } catch (err) {
-                console.error("Error fetching quizzes:", err);
-            } finally {
-                if (isMounted) setLoading(false);
+            if (Array.isArray(res.data)) {
+                const sorted = [...res.data].sort(
+                    (a, b) => new Date(b.created_at) - new Date(a.created_at)
+                );
+                setQuizzes(sorted);
             }
+        } catch (err) {
+            console.error("Error fetching quizzes:", err);
+        } finally {
+            setLoading(false);
         }
-
-        fetchData();
-        return () => {
-            isMounted = false;
-        };
     }, []);
+
+    // 🔹 Gọi fetchData khi component mount
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]);
 
     return (
         <div className="w-full max-w-6xl mx-auto py-6">
@@ -41,7 +36,7 @@ export default function MyQuizzes() {
             <DashboardTabs />
 
             <div className="mt-6 bg-white rounded-2xl shadow-md p-6">
-                <QuizList quizzes={quizzes} loading={loading} />
+                <QuizList quizzes={quizzes} loading={loading} updateQuizzes={fetchData} />
             </div>
         </div>
     );

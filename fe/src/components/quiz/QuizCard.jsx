@@ -49,7 +49,6 @@ function QuizCard({ quiz, onDelete }) {
                         onClick={() => {
                             toast.dismiss(t.id);
                             if (onDelete) onDelete(quiz.id);
-                            toast.success("Đã xóa quiz thành công!");
                         }}
                         className="px-3 py-1 text-sm rounded-lg bg-red-500 text-white hover:bg-red-600"
                     >

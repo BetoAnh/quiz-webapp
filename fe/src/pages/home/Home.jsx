@@ -1,27 +1,41 @@
-import { Link } from "react-router-dom";
-import { quizService } from "@/services";
 import { useEffect, useState } from "react";
+import QuizListHorizon from "@/components/quiz/QuizListHorizon";
+import { quizService } from "@/services";
 
 function Home() {
-    const [quizzes, setQuizzes] = useState([]); // state lưu danh sách quiz
+    const [featuredQuizzes, setFeaturedQuizzes] = useState([]);
+    const [latestQuizzes, setLatestQuizzes] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchQuizzes = async () => {
+        const fetchData = async () => {
             try {
-                const res = await quizService.getAll();
-                setQuizzes(res.data); // cập nhật state
-                console.log("Quizzes:", res.data);
-
-            } catch (err) {
-                console.error("Lỗi khi lấy quiz:", err);
+                const [featuredRes, latestRes] = await Promise.all([
+                    quizService.getFeatured(),
+                    quizService.getLatest(),
+                ]);
+                setFeaturedQuizzes(featuredRes.data.data);
+                setLatestQuizzes(latestRes.data.data);
+            } catch (error) {
+                console.error("❌ Lỗi khi lấy quiz:", error);
+            } finally {
+                setLoading(false);
             }
         };
 
-        fetchQuizzes();
-    }, []); // [] để chỉ chạy 1 lần khi component mount
+        fetchData();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex justify-center items-center min-h-[50vh] text-lg text-gray-600">
+                Đang tải dữ liệu...
+            </div>
+        );
+    }
 
     return (
-        <div>
+        <div className="p-6">
             <h1 className="my-6 text-center text-3xl font-bold">
                 Welcome to Quiz App
             </h1>
@@ -29,28 +43,14 @@ function Home() {
                 Create, practice, and take quizzes to enhance your knowledge!
             </p>
 
-            <button className="mt-4 rounded bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700">
-                <Link to="/quiz/new">Tạo Quiz Mới</Link>
-            </button>
-
-            {/* Hiển thị danh sách quiz */}
-            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {quizzes.map((quiz) => (
-                    <div
-                        key={quiz.id}
-                        className="border rounded-lg p-4 shadow hover:shadow-lg transition"
-                    >
-                        <h2 className="text-xl font-semibold mb-2">{quiz.title}</h2>
-                        <p className="text-gray-600 mb-4">{quiz.description}</p>
-                        <Link
-                            to={`/quiz/${quiz.id}-${quiz.slug}`}
-                            className="text-indigo-600 hover:underline"
-                        >
-                            Bắt đầu quiz
-                        </Link>
-                    </div>
-                ))}
-            </div>
+            <QuizListHorizon
+                title="🔥 Quiz nổi bật"
+                quizzes={featuredQuizzes}
+            />
+            <QuizListHorizon
+                title="⭐ Quiz mới nhất"
+                quizzes={latestQuizzes}
+            />
         </div>
     );
 }
